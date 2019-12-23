@@ -4,7 +4,7 @@ const hex2ascii = require('hex2ascii');
 class Block {
   constructor(data) {
     this.hash = null;
-    this.height = 0;
+    this.height = -1;
     this.body = this.getBuffer(data);
     this.time = 0;
     this.previousBlockHash = null;
@@ -22,8 +22,12 @@ class Block {
     return calcHash.toString();
   };
 
-  setTime() {
-    this.time = new Date().toJSON();
+  setHeight(height) {
+    this.height = height;
+  }
+
+  setTime(time) {
+    this.time = time;
   };
 
   async validate() {
@@ -32,7 +36,7 @@ class Block {
       this.hash = null;
       return auxHash === this.calcHash();
     } catch (e) {
-      throw new Error(e);
+      throw e;
     } finally {
       this.hash = auxHash;
     }
@@ -45,7 +49,7 @@ class Block {
       const decodedBody = JSON.parse(asciiBody);
       return decodedBody;
     } catch (e) {
-      throw new Error(e);
+      throw e;
     }
   };
 }
