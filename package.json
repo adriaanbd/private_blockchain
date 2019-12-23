@@ -1,0 +1,17 @@
+{
+  "name": "private_blockchain",
+  "version": "1.0.0",
+  "description": "Mini Blockchain app to store data into blocks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "hex2ascii": "0.0.3",
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
