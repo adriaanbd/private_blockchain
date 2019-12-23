@@ -9,25 +9,34 @@ class Block {
     this.time = 0;
     this.previousBlockHash = null;
   };
+
   getBuffer(data) {
     const jsonStr = JSON.stringify(data);
     const buffer = Buffer.from(jsonStr).toString('hex');
     return buffer;
   };
 
+  calcHash() {
+    const blockData = JSON.stringify(this);
+    const calcHash = SHA256(blockData);
+    return calcHash.toString();
+  };
+
+  setTime() {
+    this.time = new Date().toJSON();
+  };
+
   async validate() {
     const auxHash = this.hash;
     try {
       this.hash = null;
-      const blockData = JSON.stringify(this);
-      const calcHash = SHA256(blockData).toString();
-      return auxHash === calcHash;
+      return auxHash === this.calcHash();
     } catch (e) {
-      console.log(e);
+      throw new Error(e);
     } finally {
       this.hash = auxHash;
     }
-  }
+  };
 
   async getBData() {
     if (this.previousBlockHash == null) return;
@@ -36,9 +45,9 @@ class Block {
       const decodedBody = JSON.parse(asciiBody);
       return decodedBody;
     } catch (e) {
-      console.log(e);
+      throw new Error(e);
     }
-  }
+  };
 }
 
 module.exports.Block = Block;
