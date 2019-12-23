@@ -21,11 +21,7 @@ class Block {
       this.hash = null;
       const blockData = JSON.stringify(this);
       const calcHash = SHA256(blockData).toString();
-      if (auxHash === calcHash) {
-        return true;
-      } else {
-        return false;
-      }
+      return auxHash === calcHash;
     } catch (e) {
       console.log(e);
     } finally {
