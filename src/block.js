@@ -19,8 +19,8 @@ class Block {
     const auxHash = this.hash;
     try {
       this.hash = null;
-      const blockData = await JSON.stringify(this);
-      const calcHash = await SHA256(blockData).toString();
+      const blockData = JSON.stringify(this);
+      const calcHash = SHA256(blockData).toString();
       if (auxHash === calcHash) {
         return true;
       } else {
@@ -31,6 +31,10 @@ class Block {
     } finally {
       this.hash = auxHash;
     }
+  }
+
+  async getBData() {
+
   }
 }
 
