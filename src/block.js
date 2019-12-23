@@ -34,7 +34,14 @@ class Block {
   }
 
   async getBData() {
-
+    if (this.previousBlockHash == null) return;
+    try {
+      const asciiBody = hex2ascii(this.body);
+      const decodedBody = JSON.parse(asciiBody);
+      return decodedBody;
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
 
