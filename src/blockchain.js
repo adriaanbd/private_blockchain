@@ -118,7 +118,7 @@ class Blockchain {
       for (const block of this.chain) {
         const bData = await block.getBData();
         if (bData && bData.address === address) {
-          stars.push(bData.star);
+          stars.push({star: bData.star, owner: bData.address});
         }
       };
       return stars;
