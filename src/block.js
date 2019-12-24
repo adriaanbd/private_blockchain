@@ -33,15 +33,16 @@ class Block {
   async validate() {
     const auxHash = this.hash;
     this.hash = null;
-    return auxHash === this.calcHash();
+    const isValid = auxHash === this.calcHash();
     this.hash = auxHash;
+    return isValid;
   };
 
   async getBData() {
     if (this.previousBlockHash == null) return;
-      const asciiBody = hex2ascii(this.body);
-      const decodedBody = JSON.parse(asciiBody);
-      return decodedBody;
+    const asciiBody = hex2ascii(this.body);
+    const decodedBody = JSON.parse(asciiBody);
+    return decodedBody;
   }
 }
 
