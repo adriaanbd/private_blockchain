@@ -76,23 +76,6 @@ class BlockchainController {
     });
   }
 
-  // This endpoint allows you to retrieve the block by hash (GET endpoint)
-  getBlockByHash() {
-    this.app.get('/block/:hash', async (req, res) => {
-      if (req.params.hash) {
-        const hash = req.params.hash;
-        const block = await this.blockchain.getBlockByHash(hash);
-        if (block) {
-          return res.status(200).json(block);
-        } else {
-          return res.status(404).send('Block Not Found!');
-        }
-      } else {
-        return res.status(404).send('Block Not Found! Review the Parameters!');
-      }
-    });
-  }
-
   // This endpoint allows you to request the list of Stars registered by an owner
   getStarsByOwner() {
     this.app.get('/blocks/:address', async (req, res) => {
