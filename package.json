@@ -10,10 +10,11 @@
     "bitcoinjs-lib": "^4.0.3",
     "bitcoinjs-message": "^2.0.0",
     "body-parser": "^1.18.3",
-    "express": "^4.16.4",
     "crypto-js": "^3.1.9-1",
+    "express": "^4.16.4",
     "hex2ascii": "0.0.3",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
