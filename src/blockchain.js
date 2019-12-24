@@ -18,8 +18,7 @@ class Blockchain {
 
   async _heightCounter() {
     this.height += 1;
-    const height = await this.getChainHeight();
-    return height;
+    return this.height;
   }
 
   _addToChain(block) {
@@ -31,16 +30,16 @@ class Blockchain {
     return this.height === 0 && this.chain.length === 0;
   }
 
-  _getUnixTime() {
-    return new Date().getTime().toString().slice(0, -3);
+  _getTimestamp() {
+    return Date.now().toString().slice(0, -3);
   }
 
   _isUnder5mins(message) {
     const delim = ':';
-    const currTime = parseInt(this.getUnixTime);
+    const currTime = parseInt(this._getTimestamp());
     const mssgTime = parseInt(message.split(delim)[1]);
-    const fiveMinsInSeconds = 5 * 60;
-    return currTime - mssgTime < fiveMinsInSeconds;
+    const fiveMinsInMiliSeconds = 5 * 60000;
+    return (currTime - mssgTime) < fiveMinsInMiliSeconds;
   }
 
   async getChainHeight() {
@@ -48,25 +47,24 @@ class Blockchain {
   }
 
   async _addBlock(block) {
-    (async () => {
-      try {
-        block.setHeight(this._heightCounter());
-        block.setTime(this._getUnixTime());
-        if (!this._isGenesisBlock()) {
-          const previousBlock = await this.getBlockByHeight(block.height);
-          block.previousHash = previousBlock.hash;
-        }
-        this._addToChain(block);
-        return block;
-      } catch (error) {
-        throw error;
+    try {
+      this._heightCounter();
+      block.setHeight(this.height);
+      block.setTime(this._getTimestamp());
+      if (!this._isGenesisBlock()) {
+        const previousBlock = await this.getBlockByHeight(block.height - 1);
+        block.previousBlockHash = previousBlock.hash;
       }
-    })().catch((e) => console.log(e));
-  };
+      this._addToChain(block);
+      return block;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async requestMessageOwnershipVerification(address) {
     try {
-      const unixTime = this.getUnixTime();
+      const unixTime = this._getTimestamp();
       const messageToSign = `${address}:${unixTime}:starRegistry`;
       return messageToSign;
     } catch (error) {
@@ -75,28 +73,30 @@ class Blockchain {
   }
 
   async submitStar(address, message, signature, star) {
-    (async () => {
-      try {
-        if (this._isUnder5mins(message)) {
-          const isValid = bitcoinMessage.verify(message, address, signature);
-          if (isValid) {
-            const data = {star, address};
-            const newBlock = new BlockMod.Block(data);
-            return await this._addBlock(newBlock);
-          }
+    try {
+      if (this._isUnder5mins(message)) {
+        const isValid = bitcoinMessage.verify(message, address, signature);
+        if (isValid) {
+          const data = {star, address};
+          const newBlock = new BlockMod.Block(data);
+          await this._addBlock(newBlock);
+          return newBlock;
         } else {
-          throw new Error('Time between message and submission has to be less than 5 minutes!');
+          throw new Error('Transaction is not valid!');
         }
-      } catch (error) {
-        throw error;
+      } else {
+        throw new Error('Time between message and submission has to be less than 5 minutes!');
       }
-    })().catch((e) => console.log(e));
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getBlockByHash(hash) {
     try {
       const block = this.chain.filter((block) => block.hash === hash);
-      return block;
+      if (block.length > 0) return block[0];
+      throw new Error('Block not found!');
     } catch (error) {
       throw error;
     }
@@ -117,8 +117,8 @@ class Blockchain {
     try {
       for (const block of this.chain) {
         const bData = await block.getBData();
-        if (bData.address === address) {
-          stars.push(bdata.star);
+        if (bData && bData.address === address) {
+          stars.push(bData.star);
         }
       };
       return stars;
@@ -129,28 +129,32 @@ class Blockchain {
 
   async validateChain() {
     const errorLog = [];
-    (async () => {
-      try {
-        for (const b = 0; b < this.chain.length; b += 1) {
-          const currBlock = this.chain[b];
-          const isValid = await currBlock.validate();
-          if (!isValid) {
-            const error1 = {error: 'Block is invalid', block: currBlock.height};
-            errorLog.push(error1);
-          }
-          if (currBlock.height > 0) {
-            const prevBlock = this.chain[b - 1];
-            const hasValidHash = prevBlock.calcHash() === currBlock.previousHash;
-            if (!hasValidHash) {
-              const error2 = {error: 'Discrepancy between Blocks', blocks: [prevBlock, currBlock.height]};
-              errorLog.push(error2);
-            };
+    try {
+      for (let b = 0; b < this.chain.length; b += 1) {
+        const currBlock = this.chain[b];
+        const isValid = await currBlock.validate();
+        if (!isValid) {
+          const error1 = {error: 'Block is invalid', block: currBlock};
+          errorLog.push(error1);
+        }
+        if (b > 0) {
+          const prevBlock = this.chain[b - 1];
+          const auxHash = prevBlock.hash;
+          prevBlock.hash = null;
+          const validHash = prevBlock.calcHash();
+          const hasValidHash = validHash === currBlock.previousBlockHash;
+          if (!hasValidHash) {
+            const error2 = {error: 'Discrepancy between Blocks', current: currBlock, previous: prevBlock};
+            errorLog.push(error2);
           };
+          prevBlock.hash = auxHash;
         };
-      } catch (error) {
-        throw error;
-      }
-    })().catch((e) => console.log(e));
+      };
+    } catch (error) {
+      throw error;
+    } finally {
+      return errorLog;
+    }
   };
 }
 
