@@ -32,26 +32,17 @@ class Block {
 
   async validate() {
     const auxHash = this.hash;
-    try {
-      this.hash = null;
-      return auxHash === this.calcHash();
-    } catch (e) {
-      throw e;
-    } finally {
-      this.hash = auxHash;
-    }
+    this.hash = null;
+    return auxHash === this.calcHash();
+    this.hash = auxHash;
   };
 
   async getBData() {
     if (this.previousBlockHash == null) return;
-    try {
       const asciiBody = hex2ascii(this.body);
       const decodedBody = JSON.parse(asciiBody);
       return decodedBody;
-    } catch (e) {
-      throw e;
-    }
-  };
+  }
 }
 
 module.exports.Block = Block;
