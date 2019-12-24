@@ -14,7 +14,6 @@ class BlockchainController {
     this.getBlockByHeight();
     this.requestOwnership();
     this.submitStar();
-    this.getBlockByHash();
     this.getStarsByOwner();
   }
 
