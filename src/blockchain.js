@@ -31,7 +31,7 @@ class Blockchain {
   }
 
   _getTimestamp() {
-    return Date.now().toString().slice(0, -3);
+    return Date.now().toString();
   }
 
   _isUnder5mins(message) {
